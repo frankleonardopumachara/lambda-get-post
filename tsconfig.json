@@ -1,0 +1,23 @@
+{
+  "extends": "@tsconfig/node18/tsconfig.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "outDir": "./dist",
+    "sourceMap": false,
+    "removeComments": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

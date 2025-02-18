@@ -1,0 +1,54 @@
+service: starwars-weather-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  apiGateway:
+    shouldStartNameWithService: true
+  environment:
+    CACHE_TABLE: ${self:service}-cache-${opt:stage, 'dev'}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CACHE_TABLE}"
+
+functions:
+  fusionados:
+    handler: src/index.getMergedHandler
+    events:
+      - http:
+          path: fusionados
+          method: get
+  almacenar:
+    handler: src/handlers/almacenar.postAlmacenar
+    events:
+      - http:
+          path: almacenar
+          method: post
+  historial:
+    handler: src/handlers/historial.getHistorial
+    events:
+      - http:
+          path: historial
+          method: get
+
+resources:
+  Resources:
+    CacheTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CACHE_TABLE}
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
