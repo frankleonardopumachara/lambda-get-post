@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { StarWarsService } from '../../../src/infrastructure/services/star-wars.service'
 import { Character } from '../../../src/infrastructure/services/Istar-wars.service'
-import { Constants } from '../../../src/utils/Constants';
 import { CharacterNotFound } from '../../../src/domain/errors/errors'
+import { Constants } from '../../../src/utils/constants';
 
 jest.mock('axios');
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { WeightService } from '../../../src/infrastructure/services/weight.service'
 import { WeightCategory } from '../../../src/infrastructure/services/IBMI.service'
-import { Constants } from '../../../src/utils/Constants';
+import { Constants } from '../../../src/utils/constants';
 
 jest.mock('axios');
 

@@ -6,5 +6,6 @@ export const Constants = {
 	BMI_CALCULATOR_BASE: 'https://smart-body-mass-index-calculator-bmi.p.rapidapi.com/api/BMI/metric',
 	TIME_30_MINUTES: 30,
 	GLOBAL_PARTITION: 'global',
-	UNKNOWN_CATEGORY: 'Unknown'
+	UNKNOWN_CATEGORY: 'Unknown',
+	STAR_WARS_BASE: 'https://swapi.dev/api'
 }

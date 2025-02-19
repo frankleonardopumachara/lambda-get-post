@@ -1,4 +1,4 @@
-import { Constants } from '../../src/utils/Constants';
+import { Constants } from '../../src/utils/constants'
 
 describe('Constants', () => {
 	it('debería tener un valor predeterminado para CACHE_TABLE si no está definido en el entorno', () => {

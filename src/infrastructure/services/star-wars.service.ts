@@ -5,7 +5,7 @@ import { CharacterNotFound } from '../../domain/errors/errors'
 import { Constants } from '../../utils/constants'
 
 export class StarWarsService implements IStarWarsService {
-	private baseUrl = 'https://swapi.dev/api'
+	private baseUrl = Constants.STAR_WARS_BASE
 
 	async getCharacter(characterId: string): Promise<Character> {
 		try {
