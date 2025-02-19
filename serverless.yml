@@ -1,38 +1,93 @@
 service: starwars-weather-api
 
+plugins:
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-aws-documentation
+
 provider:
   name: aws
   runtime: nodejs20.x
+  region: us-east-1
   apiGateway:
     shouldStartNameWithService: true
   environment:
-    CACHE_TABLE: ${self:service}-cache-${opt:stage, 'dev'}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CACHE_TABLE}"
+    CACHE_TABLE: cache-table-dev # Nombre de la tabla DynamoDB
+    ANY_DATA_TABLE: any-data-table-dev
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js # Ruta a tu configuración de Webpack
+    includeModules: true # Incluye dependencias de node_modules
+    packager: 'npm' # Usa npm para instalar dependencias
+  documentation:
+    version: '1'
+    title: 'Start wars api'
+    description: 'Start wars challenge'
+    models: { }
 
 functions:
   fusionados:
-    handler: src/index.getMergedHandler
+    handler: dist/index.getMergedHandler
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          - dynamodb:Query
+        Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CACHE_TABLE}"
     events:
       - http:
           path: fusionados
           method: get
   almacenar:
-    handler: src/handlers/almacenar.postAlmacenar
+    handler: dist/index.storeItemHandler
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - dynamodb:PutItem
+        Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.ANY_DATA_TABLE}"
     events:
       - http:
           path: almacenar
           method: post
   historial:
-    handler: src/handlers/historial.getHistorial
+    handler: dist/index.listRecordHandler
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - dynamodb:Scan
+        Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CACHE_TABLE}"
     events:
       - http:
           path: historial
           method: get
+          documentation:
+            summary: Obtener el historial de personajes
+            description: Devuelve el historial completo de un personaje por ID
+            requestHeaders:
+              - name: Authorization
+                description: Token JWT para autenticación
+            queryParams:
+              - name: characterId
+                description: ID del personaje
+                required: true
+            responses:
+              200:
+                description: Historial obtenido exitosamente
+                body:
+                  description: Respuesta con el historial del personaje
+                  schema:
+                    type: object
+                    properties:
+                      characterId:
+                        type: string
+                      name:
+                        type: string
+              400:
+                description: Datos inválidos
+              404:
+                description: Personaje no encontrado
 
 resources:
   Resources:
@@ -41,14 +96,29 @@ resources:
       Properties:
         TableName: ${self:provider.environment.CACHE_TABLE}
         AttributeDefinitions:
-          - AttributeName: key
+          - AttributeName: globalPartition # Clave de partición global
+            AttributeType: S
+          - AttributeName: createdAt # Clave de ordenación
             AttributeType: S
         KeySchema:
-          - AttributeName: key
+          - AttributeName: globalPartition # Clave de partición
             KeyType: HASH
+          - AttributeName: createdAt # Clave de ordenación
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TimeToLiveSpecification:
-          AttributeName: ttl
+          AttributeName: ttl # Habilitar TTL en este atributo
           Enabled: true
+    AnyDataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ANY_DATA_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

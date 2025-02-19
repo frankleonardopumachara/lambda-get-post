@@ -1,4 +1,4 @@
-import { Messages } from '../../utils/Messages'
+import { Messages } from '../../utils/messages'
 
 export interface AppErrorProps<T = Record<string, any>> {
   message?: string
